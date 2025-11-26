@@ -1,0 +1,7 @@
+{
+  "name": "Copy of SmartTrip Planner",
+  "description": "AI-powered travel planner with interactive maps, expense tracking, and automated itineraries.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
