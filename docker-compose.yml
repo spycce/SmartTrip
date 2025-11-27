@@ -23,7 +23,7 @@ services:
       args:
         - API_KEY=${API_KEY}
     ports:
-      - "80:80"
+      - "80:5000"
     depends_on:
       - backend
     networks:
