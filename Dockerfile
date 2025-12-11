@@ -2,6 +2,9 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+ARG API_KEY
+ENV API_KEY=$API_KEY
+
 # Copy root package files and install frontend dependencies
 COPY package*.json ./
 RUN npm install

@@ -69,6 +69,7 @@ app.post('/api/auth/register', async (req, res) => {
     const token = jwt.sign({ id: user._id }, JWT_SECRET);
     res.json({ user: { id: user._id, name, email }, token });
   } catch (err) {
+    console.error('Registration Error:', err);
     res.status(400).send('Error registering user');
   }
 });

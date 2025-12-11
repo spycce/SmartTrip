@@ -117,6 +117,17 @@ const CreateTrip: React.FC = () => {
     mode: TravelMode.FLIGHT
   });
 
+  // Clear fields on mount (or when revisited)
+  React.useEffect(() => {
+    setFormData({
+      from: '',
+      to: '',
+      startDate: '',
+      endDate: '',
+      mode: TravelMode.FLIGHT
+    });
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
