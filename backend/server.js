@@ -40,7 +40,7 @@ app.use(express.static(path.join(__dirname, '../dist')));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://mongo:27017/smarttrip';
-const API_KEY = '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'//process.env.OPENROUTER_API_KEY;
+const OPENROUTER_API_KEY = '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'//process.env.OPENROUTER_API_KEY;
 
 mongoose.connect(MONGO_URI)
   .then(() => console.log('MongoDB Connected'))
@@ -103,8 +103,8 @@ app.delete('/api/trips/:id', auth, async (req, res) => {
 
 // Gemini Endpoint (Server-side proxy example)
 app.post('/api/chat/generate-summary', auth, async (req, res) => {
-  if (!API_KEY) return res.status(500).send('API Key missing');
-  const ai = new GoogleGenAI({ apiKey: API_KEY });
+  if (!OPENROUTER_API_KEY) return res.status(500).send('API Key missing');
+  const ai = new GoogleGenAI({ apiKey: OPENROUTER_API_KEY });
   const { prompt } = req.body;
 
   try {
