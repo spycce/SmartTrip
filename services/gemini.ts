@@ -1,7 +1,6 @@
 import { TravelMode, Trip } from '../types';
 
-// The API key is injected via Vite environment variables (from Docker build args)
-const API_KEY = process.env.API_KEY;
+
 
 export const generateTripPlan = async (
   from: string,
@@ -60,40 +59,34 @@ export const generateTripPlan = async (
   `;
 
   try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    // Get the standard auth token from localStorage (managed by your auth context/logic)
+    const token = localStorage.getItem('token');
+
+    const response = await fetch("/api/trip/generate", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${API_KEY}`,
-        "HTTP-Referer": "http://localhost:80", // Site URL
-        "X-Title": "SmartTrip Planner", // Site title
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
       },
-      body: JSON.stringify({
-        "model": "openai/gpt-4o-mini",
-        "messages": [
-          {
-            "role": "user",
-            "content": prompt
-          }
-        ]
-      })
+      body: JSON.stringify({ prompt })
     });
 
     if (!response.ok) {
-      throw new Error(`OpenRouter API Error: ${response.statusText}`);
+      const errText = await response.text();
+      throw new Error(`Server Error: ${errText}`);
     }
 
     const data = await response.json();
-    const content = data.choices[0]?.message?.content;
+    const content = data.text;
 
     if (content) {
       // Clean up markdown code blocks if present
       const jsonString = content.replace(/```json\n?|\n?```/g, '').trim();
       return JSON.parse(jsonString);
     }
-    throw new Error("No response content from OpenRouter");
+    throw new Error("No response content from server");
   } catch (error) {
-    console.error("OpenRouter Error:", error);
-    throw new Error("Failed to generate trip plan. Please check your API limits or try again.");
+    console.error("Trip Generation Error:", error);
+    throw new Error("Failed to generate trip plan. Please try again.");
   }
 };

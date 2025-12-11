@@ -102,19 +102,30 @@ app.delete('/api/trips/:id', auth, async (req, res) => {
 });
 
 // Gemini Endpoint (Server-side proxy example)
-app.post('/api/chat/generate-summary', auth, async (req, res) => {
+// OpenRouter Endpoint (Proxy)
+app.post('/api/trip/generate', auth, async (req, res) => {
   if (!OPENROUTER_API_KEY) return res.status(500).send('API Key missing');
-  const ai = new GoogleGenAI({ apiKey: OPENROUTER_API_KEY });
+
   const { prompt } = req.body;
 
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash',
-      contents: prompt
+    const response = await require('axios').post("https://openrouter.ai/api/v1/chat/completions", {
+      model: "openai/gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }]
+    }, {
+      headers: {
+        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+        "HTTP-Referer": "http://localhost:5000",
+        "X-Title": "SmartTrip Planner",
+        "Content-Type": "application/json"
+      }
     });
-    res.json({ text: response.text });
+
+    const content = response.data.choices[0]?.message?.content;
+    res.json({ text: content });
   } catch (err) {
-    res.status(500).send(err.message);
+    console.error('OpenRouter Error:', err.response?.data || err.message);
+    res.status(500).send(err.response?.data?.error?.message || 'Failed to generate trip');
   }
 });
 
