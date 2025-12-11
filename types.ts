@@ -26,6 +26,7 @@ export interface DayPlan {
     links?: { label: string; url: string }[];
   }[];
   images?: string[];
+  imageUrl?: string; // Stable URL from Wikipedia/API
   image_keywords?: string[];
 }
 

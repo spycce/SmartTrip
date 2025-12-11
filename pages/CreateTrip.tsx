@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { generateTripPlan } from '../services/gemini';
 import { createTrip } from '../services/api';
+import { fetchLocationImage } from '../services/images';
 import { TravelMode, Trip, DayPlan } from '../types';
 import { useNotification } from '../context/NotificationContext';
 import {
@@ -27,21 +28,35 @@ const TimelineItem = ({ day }: { day: DayPlan }) => (
     {/* Content Card */}
     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow sm:ml-8 flex flex-col">
 
-      {/* Images Carousel / Grid */}
-      {day.image_keywords && day.image_keywords.length > 0 && (
-        <div className={`grid gap-1 h-48 shrink-0 relative w-full ${day.image_keywords.slice(0, 3).length === 1 ? 'grid-cols-1' : 'grid-cols-3'
-          }`}>
-          {day.image_keywords.slice(0, 3).map((keyword, idx) => (
-            <img
-              key={idx}
-              src={`https://loremflickr.com/400/300/${encodeURIComponent(keyword)}?random=${idx}`}
-              alt={keyword}
-              className={`w-full h-full object-cover ${day.image_keywords!.slice(0, 3).length === 2 && idx === 0 ? 'col-span-2' : 'col-span-1'
-                }`}
-              loading="lazy"
-            />
-          ))}
+      {/* Images - Prefer static loaded URL, fall back to carousel if no single URL found */}
+      {day.imageUrl ? (
+        <div className="h-48 w-full overflow-hidden relative">
+          <img
+            src={day.imageUrl}
+            alt={day.title}
+            className="w-full h-full object-cover transition-transform hover:scale-105 duration-700"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+            <span className="text-white text-sm font-medium">{day.title}</span>
+          </div>
         </div>
+      ) : (
+        day.image_keywords && day.image_keywords.length > 0 && (
+          <div className={`grid gap-1 h-48 shrink-0 relative w-full ${day.image_keywords.slice(0, 3).length === 1 ? 'grid-cols-1' : 'grid-cols-3'
+            }`}>
+            {day.image_keywords.slice(0, 3).map((keyword, idx) => (
+              <img
+                key={idx}
+                src={`https://loremflickr.com/400/300/${encodeURIComponent(keyword)}?lock=${idx}`}
+                alt={keyword}
+                className={`w-full h-full object-cover ${day.image_keywords!.slice(0, 3).length === 2 && idx === 0 ? 'col-span-2' : 'col-span-1'
+                  }`}
+                loading="lazy"
+              />
+            ))}
+          </div>
+        )
       )}
 
       <div className="p-6 bg-white relative z-10">
@@ -161,6 +176,26 @@ const CreateTrip: React.FC = () => {
         totalDays,
         totalCost
       } as Partial<Trip>;
+
+      // Enrich with images (in background or await?)
+      // We await here to ensure we have images before showing "Review"
+      // User asked to "save image url in db...". By fetching it here, 
+      // it becomes part of the state, and handleAccept() will save it to DB.
+      if (fullTripData.itinerary) {
+        await Promise.all(fullTripData.itinerary.map(async (day) => {
+          // Use image_keywords if available, otherwise title
+          const query = day.image_keywords && day.image_keywords.length > 0
+            ? day.image_keywords[0]
+            : day.title;
+
+          if (query) {
+            const url = await fetchLocationImage(query);
+            if (url) {
+              day.imageUrl = url;
+            }
+          }
+        }));
+      }
 
       // Update History
       const newHistory = [...generatedPlans, fullTripData];
