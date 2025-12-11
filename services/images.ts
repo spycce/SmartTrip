@@ -1,22 +1,28 @@
-export const fetchLocationImage = async (query: string): Promise<string | null> => {
-    try {
-        // 1. Try Wikipedia API (Best for landmarks/cities)
-        const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&piprop=original&origin=*&titles=${encodeURIComponent(query)}`;
-        const wikiRes = await fetch(wikiUrl);
-        const wikiData = await wikiRes.json();
+const PEXELS_KEY = import.meta.env.VITE_PEXELS_API_KEY;
 
-        // Extract image URL from Wiki response structure
-        const pages = wikiData.query?.pages;
-        if (pages) {
-            const pageId = Object.keys(pages)[0];
-            if (pageId && pages[pageId].original) {
-                return pages[pageId].original.source;
+export const fetchLocationImage = async (query: string): Promise<string | null> => {
+    if (!PEXELS_KEY) {
+        console.warn("Pexels API Key is missing. Check .env");
+        return null;
+    }
+
+    try {
+        const response = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape`, {
+            headers: {
+                Authorization: PEXELS_KEY
             }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Pexels API Error: ${response.statusText}`);
         }
 
-        // 2. Fallback: Return null to let UI show a placeholder
+        const data = await response.json();
+        if (data.photos && data.photos.length > 0) {
+            // Return 'large' or 'medium' for good quality/size balance
+            return data.photos[0].src.large2x || data.photos[0].src.large;
+        }
         return null;
-
     } catch (error) {
         console.error("Image Fetch Error:", error);
         return null;
