@@ -5,8 +5,8 @@ import { createTrip } from '../services/api';
 import { TravelMode, Trip, DayPlan } from '../types';
 import { useNotification } from '../context/NotificationContext';
 import {
-  Loader2, Plane, Car, Train, Bus, MapPin, Calendar,
-  ArrowLeft, ArrowRight, Save, RotateCcw, History
+  Plane, Car, Train, Bus, MapPin, Calendar,
+  ArrowRight, Save, RotateCcw, History
 } from 'lucide-react';
 import MapComponent from '../components/Map';
 
@@ -21,7 +21,7 @@ const TimelineItem = ({ day }: { day: DayPlan }) => (
     </div>
 
     {/* Line & Dot */}
-    <div className="hidden sm:block absolute left-[7.5rem] top-0 bottom-0 w-px bg-slate-200 ml-[0.5rem] -translate-x-1/2 group-last:bottom-auto group-last:h-8"></div>
+    <div className="absolute left-2 sm:left-[7.5rem] top-0 bottom-0 w-px bg-slate-200 ml-[0.5rem] -translate-x-1/2 group-last:bottom-auto group-last:h-8"></div>
     <div className="absolute left-2 sm:left-[7.5rem] top-9 w-4 h-4 bg-blue-600 border-4 border-white rounded-full shadow-sm sm:ml-[0.5rem] -translate-x-1/2 z-10"></div>
 
     {/* Content Card */}
@@ -34,7 +34,7 @@ const TimelineItem = ({ day }: { day: DayPlan }) => (
           {day.image_keywords.slice(0, 3).map((keyword, idx) => (
             <img
               key={idx}
-              src={`https://image.pollinations.ai/prompt/${encodeURIComponent(keyword)}?width=400&height=300&nologo=true`}
+              src={`https://loremflickr.com/400/300/${encodeURIComponent(keyword)}?random=${idx}`}
               alt={keyword}
               className={`w-full h-full object-cover ${day.image_keywords!.slice(0, 3).length === 2 && idx === 0 ? 'col-span-2' : 'col-span-1'
                 }`}
