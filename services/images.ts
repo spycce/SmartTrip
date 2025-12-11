@@ -1,9 +1,12 @@
 const PEXELS_KEY = import.meta.env.VITE_PEXELS_API_KEY;
 
 export const fetchLocationImage = async (query: string): Promise<string | null> => {
+    console.log(`[ImageService] Fetching image for: "${query}"`);
+    console.log(`[ImageService] API Key available: ${!!PEXELS_KEY}`);
+
     if (!PEXELS_KEY) {
         console.warn("Pexels API Key is missing. Check .env");
-        return null;
+        return null; // Fallback to placeholder
     }
 
     try {
