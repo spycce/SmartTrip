@@ -40,7 +40,7 @@ app.use(express.static(path.join(__dirname, '../dist')));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://mongo:27017/smarttrip';
-const OPENROUTER_API_KEY = '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'//process.env.OPENROUTER_API_KEY;
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
 mongoose.connect(MONGO_URI)
   .then(() => console.log('MongoDB Connected'))
