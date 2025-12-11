@@ -107,6 +107,8 @@ app.post('/api/trip/generate', auth, async (req, res) => {
   if (!OPENROUTER_API_KEY) return res.status(500).send('API Key missing');
 
   const { prompt } = req.body;
+  console.log('Generating trip with prompt length:', prompt?.length);
+  console.log('API Key present:', !!OPENROUTER_API_KEY);
 
   try {
     const response = await require('axios').post("https://openrouter.ai/api/v1/chat/completions", {
