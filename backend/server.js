@@ -74,10 +74,12 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
+
+
 app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
-  if (!user) return res.status(400).send('User not found');
+  if (!user) return res.status(400).send('Login failed: User not found in database');
   const validPass = await bcrypt.compare(password, user.password);
   if (!validPass) return res.status(400).send('Invalid password');
 
@@ -127,7 +129,8 @@ app.post('/api/trip/generate', auth, async (req, res) => {
     res.json({ text: content });
   } catch (err) {
     console.error('OpenRouter Error:', err.response?.data || err.message);
-    res.status(500).send(err.response?.data?.error?.message || 'Failed to generate trip');
+    const upstreamError = err.response?.data?.error?.message || err.message;
+    res.status(500).send(`OpenRouter Error: ${upstreamError}`);
   }
 });
 
