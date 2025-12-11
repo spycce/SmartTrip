@@ -24,9 +24,9 @@ const TimelineItem = ({ day }: { day: DayPlan }) => (
         {/* Content Card */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow sm:ml-8 flex flex-col">
 
-            {/* Images - Prefer static loaded URL, fall back to carousel if no single URL found */}
+            {/* Images - Prefer static loaded URL, fall back to Placeholder */}
             {day.imageUrl ? (
-                <div className="h-48 w-full overflow-hidden relative">
+                <div className="h-48 w-full overflow-hidden relative group">
                     <img
                         src={day.imageUrl}
                         alt={day.title}
@@ -38,21 +38,11 @@ const TimelineItem = ({ day }: { day: DayPlan }) => (
                     </div>
                 </div>
             ) : (
-                day.image_keywords && day.image_keywords.length > 0 && (
-                    <div className={`grid gap-1 h-48 shrink-0 relative w-full ${day.image_keywords.slice(0, 3).length === 1 ? 'grid-cols-1' : 'grid-cols-3'
-                        }`}>
-                        {day.image_keywords.slice(0, 3).map((keyword, idx) => (
-                            <img
-                                key={idx}
-                                src={`https://loremflickr.com/400/300/${encodeURIComponent(keyword)}?lock=${idx}`}
-                                alt={keyword}
-                                className={`w-full h-full object-cover ${day.image_keywords!.slice(0, 3).length === 2 && idx === 0 ? 'col-span-2' : 'col-span-1'
-                                    }`}
-                                loading="lazy"
-                            />
-                        ))}
-                    </div>
-                )
+                <div className="h-48 w-full bg-slate-100 flex flex-col items-center justify-center text-slate-400 relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-slate-50 opacity-50 patterned-bg"></div>
+                    <MapPin size={48} className="mb-2 text-slate-300 group-hover:text-blue-200 transition-colors" />
+                    <span className="text-sm font-medium relative z-10">Explore {day.title}</span>
+                </div>
             )}
 
             <div className="p-6 bg-white relative z-10">

@@ -14,9 +14,8 @@ export const fetchLocationImage = async (query: string): Promise<string | null> 
             }
         }
 
-        // 2. Fallback to LoremFlickr if Wiki fails (or use Pexels if key available)
-        // Using a specific random seed based on query to keep it somewhat stable for the same session
-        return `https://loremflickr.com/800/600/${encodeURIComponent(query)}?lock=${query.length}`;
+        // 2. Fallback: Return null to let UI show a placeholder
+        return null;
 
     } catch (error) {
         console.error("Image Fetch Error:", error);
