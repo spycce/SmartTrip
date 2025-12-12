@@ -5,6 +5,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { GoogleGenAI } = require('@google/genai');
+const multer = require('multer');
 
 // --- Models ---
 const userSchema = new mongoose.Schema({
@@ -39,9 +40,21 @@ const tripSchema = new mongoose.Schema({
     rating: Number, // 1-5
     comment: String,
     date: { type: Date, default: Date.now }
-  }]
+  }],
+  isShared: { type: Boolean, default: false }
 });
 const Trip = mongoose.model('Trip', tripSchema);
+
+const photoSchema = new mongoose.Schema({
+  userId: String,
+  tripId: mongoose.Schema.Types.ObjectId,
+  image: Buffer,
+  contentType: String,
+  isShared: { type: Boolean, default: false },
+  caption: String,
+  createdAt: { type: Date, default: Date.now }
+});
+const Photo = mongoose.model('Photo', photoSchema);
 
 // --- Config ---
 const app = express();
@@ -71,6 +84,13 @@ const auth = (req, res, next) => {
     res.status(400).send('Invalid Token');
   }
 };
+
+// Multer Config
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+});
 
 // --- Routes ---
 app.post('/api/auth/register', async (req, res) => {
@@ -183,6 +203,97 @@ app.delete('/api/trips/:id/reviews/:reviewId', auth, async (req, res) => {
   } catch (err) {
     console.error('Error deleting review:', err);
     res.status(500).send('Error deleting review');
+  }
+});
+
+// --- Social & Photo Routes ---
+
+// Public Landing Feed (Shared Trips & Photos)
+app.get('/api/public/landing', async (req, res) => {
+  try {
+    const sharedTrips = await Trip.find({ isShared: true }).limit(6).sort({ startDate: -1 });
+    const sharedPhotos = await Photo.find({ isShared: true }).limit(10).sort({ createdAt: -1 });
+
+    // Convert photo buffers to base64 for frontend
+    const photosWithBase64 = sharedPhotos.map(p => ({
+      ...p.toObject(),
+      image: `data:${p.contentType};base64,${p.image.toString('base64')}`
+    }));
+
+    res.json({ trips: sharedTrips, photos: photosWithBase64 });
+  } catch (err) {
+    console.error('Landing Feed Error:', err);
+    res.status(500).send('Error fetching public feed');
+  }
+});
+
+// Toggle Trip Sharing
+app.post('/api/trips/:id/share', auth, async (req, res) => {
+  try {
+    const trip = await Trip.findOne({ _id: req.params.id, userId: req.user.id });
+    if (!trip) return res.status(404).send('Trip not found');
+
+    trip.isShared = !trip.isShared;
+    await trip.save();
+    res.json({ isShared: trip.isShared });
+  } catch (err) {
+    res.status(500).send('Error toggling share status');
+  }
+});
+
+// Upload Photo to Trip
+app.post('/api/trips/:id/photos', auth, upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).send('No image uploaded');
+
+    const newPhoto = new Photo({
+      userId: req.user.id,
+      tripId: req.params.id,
+      image: req.file.buffer,
+      contentType: req.file.mimetype,
+      caption: req.body.caption || '',
+      isShared: req.body.isShared === 'true'
+    });
+
+    await newPhoto.save();
+
+    res.json({
+      ...newPhoto.toObject(),
+      image: `data:${newPhoto.contentType};base64,${newPhoto.image.toString('base64')}`
+    });
+  } catch (err) {
+    console.error('Upload Error:', err);
+    res.status(500).send('Error uploading photo');
+  }
+});
+
+// Get Photos for a Trip
+app.get('/api/trips/:id/photos', auth, async (req, res) => {
+  try {
+    const photos = await Photo.find({ tripId: req.params.id });
+
+    const photosWithBase64 = photos.map(p => ({
+      ...p.toObject(),
+      image: `data:${p.contentType};base64,${p.image.toString('base64')}`
+    }));
+
+    res.json(photosWithBase64);
+  } catch (err) {
+    res.status(500).send('Error fetching photos');
+  }
+});
+
+// Toggle Photo Sharing
+app.put('/api/photos/:photoId/share', auth, async (req, res) => {
+  try {
+    const photo = await Photo.findOne({ _id: req.params.photoId, userId: req.user.id });
+    if (!photo) return res.status(404).send('Photo not found');
+
+    photo.isShared = !photo.isShared;
+    await photo.save();
+    res.json({ isShared: photo.isShared });
+  } catch (err) {
+    res.status(500).send('Error updating photo share status');
   }
 });
 

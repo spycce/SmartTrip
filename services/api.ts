@@ -47,3 +47,32 @@ export const createTrip = async (tripData: Partial<Trip>): Promise<Trip> => {
 export const deleteTrip = async (id: string): Promise<void> => {
   await api.delete(`/trips/${id}`);
 };
+
+// --- Social Services ---
+
+export const getPublicFeed = async () => {
+  const res = await api.get('/public/landing');
+  return res.data;
+};
+
+export const shareTrip = async (id: string) => {
+  const res = await api.post(`/trips/${id}/share`);
+  return res.data;
+};
+
+export const uploadPhoto = async (tripId: string, formData: FormData) => {
+  const res = await api.post(`/trips/${tripId}/photos`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return res.data;
+};
+
+export const getTripPhotos = async (tripId: string) => {
+  const res = await api.get(`/trips/${tripId}/photos`);
+  return res.data;
+};
+
+export const togglePhotoShare = async (photoId: string) => {
+  const res = await api.put(`/photos/${photoId}/share`);
+  return res.data;
+};

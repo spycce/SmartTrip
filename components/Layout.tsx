@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useLocation, matchPath } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   Map,
@@ -9,13 +9,19 @@ import {
   X,
   PlusCircle,
   Settings,
-  Info
+  Info,
+  Camera
 } from 'lucide-react';
 
 const Layout: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Check if we are in a trip context
+  const tripMatch = matchPath('/trips/:id/*', location.pathname);
+  const tripId = tripMatch?.params.id;
 
   const handleLogout = () => {
     logout();
@@ -25,6 +31,7 @@ const Layout: React.FC = () => {
   const NavItem = ({ to, icon: Icon, label }: { to: string, icon: any, label: string }) => (
     <NavLink
       to={to}
+      end // Exact match for active state unless it's a parent route
       onClick={() => setSidebarOpen(false)}
       className={({ isActive }) =>
         `flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${isActive
@@ -54,9 +61,17 @@ const Layout: React.FC = () => {
 
           <div className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
             <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-4 mb-2">Menu</div>
-            <NavItem to="/" icon={LayoutDashboard} label="Dashboard" />
+            <NavItem to="/dashboard" icon={LayoutDashboard} label="Dashboard" />
             <NavItem to="/create" icon={PlusCircle} label="New Trip" />
             <NavItem to="/about" icon={Info} label="About Us" />
+
+            {tripId && (
+              <>
+                <div className="mt-8 text-xs font-semibold text-slate-500 uppercase tracking-wider px-4 mb-2">Current Trip</div>
+                <NavItem to={`/trips/${tripId}`} icon={Map} label="Itinerary" />
+                <NavItem to={`/trips/${tripId}/gallery`} icon={Camera} label="Photo Gallery" />
+              </>
+            )}
 
             <div className="mt-8 text-xs font-semibold text-slate-500 uppercase tracking-wider px-4 mb-2">Settings</div>
             <button className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">

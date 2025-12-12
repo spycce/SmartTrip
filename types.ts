@@ -73,6 +73,18 @@ export interface Trip {
   };
   totalCost: number;
   reviews?: Review[];
+  isShared?: boolean;
+}
+
+export interface Photo {
+  _id: string;
+  userId: string;
+  tripId: string;
+  image: string; // Base64 data URI
+  contentType: string;
+  isShared: boolean;
+  caption?: string;
+  createdAt: string;
 }
 
 export interface AuthState {

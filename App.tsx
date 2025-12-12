@@ -11,6 +11,9 @@ import TripDetails from './pages/TripDetails';
 import AboutUs from './pages/AboutUs';
 import Layout from './components/Layout';
 
+import LandingPage from './pages/LandingPage';
+import PhotoGallery from './pages/PhotoGallery';
+
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   const location = useLocation();
@@ -30,18 +33,22 @@ const App: React.FC = () => {
       <AuthProvider>
         <HashRouter>
           <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
 
-            <Route path="/" element={
+            {/* Protected Routes */}
+            <Route element={
               <ProtectedRoute>
                 <Layout />
               </ProtectedRoute>
             }>
-              <Route index element={<Dashboard />} />
-              <Route path="create" element={<CreateTrip />} />
-              <Route path="trips/:id" element={<TripDetails />} />
-              <Route path="about" element={<AboutUs />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/create" element={<CreateTrip />} />
+              <Route path="/trips/:id" element={<TripDetails />} />
+              <Route path="/trips/:id/gallery" element={<PhotoGallery />} />
+              <Route path="/about" element={<AboutUs />} />
             </Route>
           </Routes>
         </HashRouter>
