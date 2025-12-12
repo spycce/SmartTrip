@@ -68,6 +68,9 @@ export const generateTripPlan = async (
   try {
     // Get the standard auth token from localStorage (managed by your auth context/logic)
     const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error("User not authenticated. Please log in to generate a trip.");
+    }
 
     const response = await fetch("/api/trip/generate", {
       method: "POST",
