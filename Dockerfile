@@ -31,6 +31,7 @@ COPY --from=builder /app/backend ./backend
 # Environment variables
 ENV NODE_ENV=production
 ENV PORT=5000
+ENV JWT_SECRET=productionsecret123
 
 EXPOSE $PORT
 
