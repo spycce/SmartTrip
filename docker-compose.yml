@@ -20,7 +20,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "80:5000"
     environment:
       - MONGO_URI=${MONGO_URI}
       - JWT_SECRET=productionsecret123
