@@ -4,7 +4,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { GoogleGenAI } = require('@google/genai');
+
+const { searchHotels } = require('./services/tripAdvisorService');
 const multer = require('multer');
 
 // --- Models ---
@@ -393,6 +394,36 @@ app.post('/api/trip/generate', auth, async (req, res) => {
     console.error('OpenRouter Error:', err.response?.data || err.message);
     const upstreamError = err.response?.data?.error?.message || err.message;
     res.status(500).send(`OpenRouter Error: ${upstreamError}`);
+  }
+});
+
+// Hotel Search Endpoint
+app.get('/api/hotels/search', async (req, res) => {
+  const { city, checkIn, checkOut } = req.query;
+  if (!city) return res.status(400).send('City is required');
+
+  console.log(`Searching hotels in ${city}...`);
+  try {
+    const hotels = await searchHotels(city, checkIn, checkOut);
+    res.json(hotels);
+  } catch (error) {
+    console.error('Search failed:', error);
+    res.status(500).send('Search failed');
+  }
+});
+
+// Hotel Details Endpoint
+const { getHotelDetails } = require('./services/tripAdvisorService');
+app.get('/api/hotels/details', async (req, res) => {
+  const { hotelId, checkIn, checkOut, adults, rooms } = req.query;
+  if (!hotelId) return res.status(400).send('HotelId is required');
+
+  try {
+    const details = await getHotelDetails(hotelId, checkIn, checkOut, adults, rooms);
+    res.json(details);
+  } catch (error) {
+    console.error('Details fetch failed:', error);
+    res.status(500).send('Failed to fetch hotel details');
   }
 });
 

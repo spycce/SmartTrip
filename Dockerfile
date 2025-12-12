@@ -1,17 +1,10 @@
-FROM node:20-alpine
+FROM node:20-alpine as builder
 
 WORKDIR /app
-
-ARG API_KEY
-ENV API_KEY=$API_KEY
 
 # Copy root package files and install frontend dependencies
 COPY package*.json ./
 RUN npm install
-
-# Copy backend package files and install backend dependencies
-COPY backend/package*.json ./backend/
-RUN cd backend && npm install
 
 # Copy all source code
 COPY . .
@@ -19,9 +12,15 @@ COPY . .
 # Build the frontend
 RUN npm run build
 
-# Expose the port (Heroku sets this env var)
-ENV PORT=5000
-EXPOSE $PORT
+# Stage 2: Serve with Nginx
+FROM nginx:alpine
 
-# Start the backend server
-CMD ["node", "backend/server.js"]
+# Copy built assets from builder stage
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Copy Nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

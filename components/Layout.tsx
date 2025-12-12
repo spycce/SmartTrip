@@ -11,7 +11,13 @@ import {
   Settings,
   Info,
   Camera,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Calendar,
+  ChevronDown,
+  Hotel,
+  Plane,
+  Train,
+  Car
 } from 'lucide-react';
 
 const Layout: React.FC = () => {
@@ -19,6 +25,7 @@ const Layout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [bookingsOpen, setBookingsOpen] = useState(true); // Default open or closed
 
   // Check if we are in a trip context
   const tripMatch = matchPath('/trips/:id/*', location.pathname);
@@ -63,6 +70,38 @@ const Layout: React.FC = () => {
           <div className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
             <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-4 mb-2">Menu</div>
             <NavItem to="/dashboard" icon={LayoutDashboard} label="Dashboard" />
+
+            {/* Nested Bookings Menu */}
+            <div>
+              <button
+                onClick={() => setBookingsOpen(!bookingsOpen)}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+              >
+                <div className="flex items-center space-x-3">
+                  <Calendar size={20} />
+                  <span className="font-medium">Bookings</span>
+                </div>
+                <ChevronDown size={16} className={`transition-transform ${bookingsOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {bookingsOpen && (
+                <div className="pl-4 mt-1 space-y-1">
+                  <NavLink to="/bookings/hotels" className={({ isActive }) => `flex items-center space-x-3 px-4 py-2 rounded-lg text-sm transition-colors ${isActive ? 'text-blue-400 bg-slate-800/50' : 'text-slate-500 hover:text-slate-300'}`}>
+                    <Hotel size={16} /> <span>Hotels</span>
+                  </NavLink>
+                  <NavLink to="/bookings/flights" className={({ isActive }) => `flex items-center space-x-3 px-4 py-2 rounded-lg text-sm transition-colors ${isActive ? 'text-blue-400 bg-slate-800/50' : 'text-slate-500 hover:text-slate-300'}`}>
+                    <Plane size={16} /> <span>Flights</span>
+                  </NavLink>
+                  <NavLink to="/bookings/trains" className={({ isActive }) => `flex items-center space-x-3 px-4 py-2 rounded-lg text-sm transition-colors ${isActive ? 'text-blue-400 bg-slate-800/50' : 'text-slate-500 hover:text-slate-300'}`}>
+                    <Train size={16} /> <span>Trains</span>
+                  </NavLink>
+                  <NavLink to="/bookings/cabs" className={({ isActive }) => `flex items-center space-x-3 px-4 py-2 rounded-lg text-sm transition-colors ${isActive ? 'text-blue-400 bg-slate-800/50' : 'text-slate-500 hover:text-slate-300'}`}>
+                    <Car size={16} /> <span>Cabs</span>
+                  </NavLink>
+                </div>
+              )}
+            </div>
+
             <NavItem to="/create" icon={PlusCircle} label="New Trip" />
             <NavItem to="/albums" icon={ImageIcon} label="My Gallery" />
             <NavItem to="/about" icon={Info} label="About Us" />

@@ -2,7 +2,9 @@ import axios from 'axios';
 import { Trip, User } from '../types';
 
 // In Docker/Production, Nginx proxies /api to the backend.
-const API_URL = '/api';
+// In Docker/Production, Nginx proxies /api to the backend.
+// Since we are using 'serve', we point directly to the backend exposed port.
+const API_URL = 'http://localhost:5000/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -107,5 +109,15 @@ export const getAlbums = async () => {
 
 export const getPublicTrip = async (tripId: string) => {
   const res = await api.get(`/public/trips/${tripId}`);
+  return res.data;
+};
+
+// Hotel Search
+export const searchHotels = async (city: string, checkIn?: string, checkOut?: string) => {
+  const params = new URLSearchParams({ city });
+  if (checkIn) params.append('checkIn', checkIn);
+  if (checkOut) params.append('checkOut', checkOut);
+
+  const res = await api.get(`/hotels/search?${params.toString()}`);
   return res.data;
 };
