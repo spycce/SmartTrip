@@ -16,7 +16,7 @@ export const generateTripPlan = async (
     IMPORTANT: Provide a response in valid JSON format.
     
     Requirements:
-    1. A short inspirational summary (max 200 chars).
+    1. A detailed, engaging, and inspirational summary (approx 150-200 words) that captures the essence of the trip.
     2. A detailed daily itinerary. 
        - For each day, provide a title (e.g., "City A -> City B").
        - A brief description of the day.

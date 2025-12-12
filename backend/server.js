@@ -26,7 +26,14 @@ const tripSchema = new mongoose.Schema({
   totalCost: Number,
   expenses: Array,
   itinerary: Array,
-  coordinates: Object
+  coordinates: Object,
+  reviews: [{
+    userId: String,
+    userName: String,
+    rating: Number, // 1-5
+    comment: String,
+    date: { type: Date, default: Date.now }
+  }]
 });
 const Trip = mongoose.model('Trip', tripSchema);
 
@@ -101,6 +108,76 @@ app.post('/api/trips', auth, async (req, res) => {
 app.delete('/api/trips/:id', auth, async (req, res) => {
   await Trip.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
   res.send('Deleted');
+});
+
+app.post('/api/trips/:id/reviews', auth, async (req, res) => {
+  const { userName, rating, comment } = req.body;
+
+  try {
+    const trip = await Trip.findById(req.params.id);
+    if (!trip) return res.status(404).send('Trip not found');
+
+    const newReview = {
+      userId: req.user.id,
+      userName,
+      rating: Number(rating),
+      comment,
+      date: new Date()
+    };
+
+    trip.reviews = trip.reviews || [];
+    trip.reviews.unshift(newReview); // Add to beginning
+
+    await trip.save();
+    res.json(trip.reviews);
+  } catch (err) {
+    console.error('Error adding review:', err);
+    res.status(500).send('Error adding review');
+  }
+});
+
+app.put('/api/trips/:id/reviews/:reviewId', auth, async (req, res) => {
+  const { rating, comment } = req.body;
+  try {
+    const trip = await Trip.findById(req.params.id);
+    if (!trip) return res.status(404).send('Trip not found');
+
+    const review = trip.reviews.id(req.params.reviewId);
+    if (!review) return res.status(404).send('Review not found');
+
+    if (review.userId !== req.user.id) {
+      return res.status(403).send('Not authorized to edit this review');
+    }
+
+    review.rating = rating;
+    review.comment = comment;
+    await trip.save();
+    res.json(trip.reviews);
+  } catch (err) {
+    console.error('Error updating review:', err);
+    res.status(500).send('Error updating review');
+  }
+});
+
+app.delete('/api/trips/:id/reviews/:reviewId', auth, async (req, res) => {
+  try {
+    const trip = await Trip.findById(req.params.id);
+    if (!trip) return res.status(404).send('Trip not found');
+
+    const review = trip.reviews.id(req.params.reviewId);
+    if (!review) return res.status(404).send('Review not found');
+
+    if (review.userId !== req.user.id) {
+      return res.status(403).send('Not authorized to delete this review');
+    }
+
+    review.deleteOne();
+    await trip.save();
+    res.json(trip.reviews);
+  } catch (err) {
+    console.error('Error deleting review:', err);
+    res.status(500).send('Error deleting review');
+  }
 });
 
 // Gemini Endpoint (Server-side proxy example)

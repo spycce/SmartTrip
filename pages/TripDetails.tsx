@@ -5,6 +5,7 @@ import { Trip, DayPlan } from '../types';
 import MapComponent from '../components/Map';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { ArrowLeft, Calendar, MapPin, IndianRupee, CheckCircle2 } from 'lucide-react';
+import ReviewSection from '../components/ReviewSection';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
@@ -236,6 +237,15 @@ const TripDetails: React.FC = () => {
                         {/* Decorative blob */}
                         <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-blue-600 blur-3xl opacity-50 rounded-full"></div>
                     </div>
+
+                    {/* Review Section */}
+                    {trip && (
+                        <ReviewSection
+                            tripId={trip.id}
+                            reviews={trip.reviews}
+                            onReviewAdded={(newReviews) => setTrip(prev => prev ? { ...prev, reviews: newReviews } : null)}
+                        />
+                    )}
                 </div>
             </div>
         </div>

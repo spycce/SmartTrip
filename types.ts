@@ -40,6 +40,15 @@ export interface Coordinates {
   lng: number;
 }
 
+export interface Review {
+  _id: string;
+  userId: string;
+  userName: string;
+  rating: number;
+  comment: string;
+  date: string;
+}
+
 export interface Trip {
   id: string; // Mongo ID or generated ID
   userId: string;
@@ -57,6 +66,7 @@ export interface Trip {
     end: Coordinates;
   };
   totalCost: number;
+  reviews?: Review[];
 }
 
 export interface AuthState {

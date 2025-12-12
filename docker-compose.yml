@@ -2,17 +2,15 @@ version: '3.8'
 
 services:
   backend:
-    build: 
+    build:
       context: ./backend
       dockerfile: Dockerfile
     ports:
       - "5000:5000"
     environment:
-      - MONGO_URI=mongodb://mongo:27017/smarttrip
+      - MONGO_URI=${MONGO_URI}
       - JWT_SECRET=productionsecret123
-      - API_KEY=${API_KEY}
-    depends_on:
-      - mongo
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
     networks:
       - app-network
 
@@ -20,24 +18,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        - API_KEY=${API_KEY}
     ports:
       - "80:5000"
-    depends_on:
-      - backend
+    environment:
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=productionsecret123
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - API_KEY=${OPENROUTER_API_KEY}
     networks:
       - app-network
-
-  mongo:
-    image: mongo:latest
-    volumes:
-      - mongo-data:/data/db
-    networks:
-      - app-network
-
-volumes:
-  mongo-data:
 
 networks:
   app-network:
