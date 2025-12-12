@@ -27,6 +27,7 @@ export const generateTripPlan = async (
        - Image Keywords: 2-3 keywords to search for images of this location (e.g., "Eiffel Tower", "Paris Cafe").
     3. Estimated expenses in INR (Indian Rupees). Provide at least 5-6 categories (e.g., Food, Travel, Stay, Activities, Misc).
     4. Coordinates: Start and End.
+    5. Transport Hubs: Provide the name and address for the nearest Airport, Bus Stand, Taxi Stand, and Railway Station for the DESTINATION city.
 
     IMPORTANT: Ensure 'itinerary' and 'expenses' arrays are NEVER empty. Populate them with realistic data.
 
@@ -54,6 +55,12 @@ export const generateTripPlan = async (
         "coordinates": {
             "start": { "lat": number, "lng": number },
             "end": { "lat": number, "lng": number }
+        },
+        "transportHubs": {
+             "airport": { "name": "string", "address": "string" },
+             "busStand": { "name": "string", "address": "string" },
+             "taxiStand": { "name": "string", "address": "string" },
+             "railwayStation": { "name": "string", "address": "string" }
         }
     }
   `;

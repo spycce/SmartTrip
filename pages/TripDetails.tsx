@@ -4,7 +4,7 @@ import { fetchTrips } from '../services/api';
 import { Trip, DayPlan } from '../types';
 import MapComponent from '../components/Map';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { ArrowLeft, Calendar, MapPin, IndianRupee, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, IndianRupee, CheckCircle2, Plane, Bus, Train, Car } from 'lucide-react';
 import ReviewSection from '../components/ReviewSection';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
@@ -159,6 +159,68 @@ const TripDetails: React.FC = () => {
                         </h3>
                         <p className="text-slate-700 leading-relaxed">{trip.summary}</p>
                     </div>
+
+                    {/* Transport Hubs Card */}
+                    {trip.transportHubs && (
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center">
+                                <span className="bg-blue-100 p-2 rounded-lg text-blue-600 mr-2">
+                                    <MapPin size={20} />
+                                </span>
+                                Transportation Hubs
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {trip.transportHubs.airport && (
+                                    <div className="flex items-start p-3 bg-slate-50 rounded-xl">
+                                        <div className="bg-white p-2 rounded-lg shadow-sm text-blue-500 mr-3">
+                                            <Plane size={18} />
+                                        </div>
+                                        <div>
+                                            <div className="text-xs font-semibold text-slate-500 uppercase">Airport</div>
+                                            <div className="font-medium text-slate-900 text-sm">{trip.transportHubs.airport.name}</div>
+                                            <div className="text-xs text-slate-400 mt-1">{trip.transportHubs.airport.address}</div>
+                                        </div>
+                                    </div>
+                                )}
+                                {trip.transportHubs.railwayStation && (
+                                    <div className="flex items-start p-3 bg-slate-50 rounded-xl">
+                                        <div className="bg-white p-2 rounded-lg shadow-sm text-orange-500 mr-3">
+                                            <Train size={18} />
+                                        </div>
+                                        <div>
+                                            <div className="text-xs font-semibold text-slate-500 uppercase">Railway Station</div>
+                                            <div className="font-medium text-slate-900 text-sm">{trip.transportHubs.railwayStation.name}</div>
+                                            <div className="text-xs text-slate-400 mt-1">{trip.transportHubs.railwayStation.address}</div>
+                                        </div>
+                                    </div>
+                                )}
+                                {trip.transportHubs.busStand && (
+                                    <div className="flex items-start p-3 bg-slate-50 rounded-xl">
+                                        <div className="bg-white p-2 rounded-lg shadow-sm text-green-500 mr-3">
+                                            <Bus size={18} />
+                                        </div>
+                                        <div>
+                                            <div className="text-xs font-semibold text-slate-500 uppercase">Bus Stand</div>
+                                            <div className="font-medium text-slate-900 text-sm">{trip.transportHubs.busStand.name}</div>
+                                            <div className="text-xs text-slate-400 mt-1">{trip.transportHubs.busStand.address}</div>
+                                        </div>
+                                    </div>
+                                )}
+                                {trip.transportHubs.taxiStand && (
+                                    <div className="flex items-start p-3 bg-slate-50 rounded-xl">
+                                        <div className="bg-white p-2 rounded-lg shadow-sm text-yellow-500 mr-3">
+                                            <Car size={18} />
+                                        </div>
+                                        <div>
+                                            <div className="text-xs font-semibold text-slate-500 uppercase">Taxi Stand</div>
+                                            <div className="font-medium text-slate-900 text-sm">{trip.transportHubs.taxiStand.name}</div>
+                                            <div className="text-xs text-slate-400 mt-1">{trip.transportHubs.taxiStand.address}</div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Day-by-Day */}
                     <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100">

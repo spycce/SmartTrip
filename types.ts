@@ -61,6 +61,12 @@ export interface Trip {
   summary: string;
   expenses: Expense[];
   itinerary: DayPlan[];
+  transportHubs?: {
+    airport?: { name: string; address: string };
+    busStand?: { name: string; address: string };
+    taxiStand?: { name: string; address: string };
+    railwayStation?: { name: string; address: string };
+  };
   coordinates?: {
     start: Coordinates;
     end: Coordinates;

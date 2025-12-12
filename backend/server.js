@@ -27,6 +27,12 @@ const tripSchema = new mongoose.Schema({
   expenses: Array,
   itinerary: Array,
   coordinates: Object,
+  transportHubs: {
+    airport: { name: String, address: String },
+    busStand: { name: String, address: String },
+    taxiStand: { name: String, address: String },
+    railwayStation: { name: String, address: String }
+  },
   reviews: [{
     userId: String,
     userName: String,

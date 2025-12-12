@@ -45,6 +45,18 @@ const Dashboard: React.FC = () => {
 
   if (loading) return <div className="p-8 text-center text-slate-500">Loading your adventures...</div>;
 
+  const getTripStatus = (start: string, end: string) => {
+    const now = new Date();
+    // Reset time to start of day for accurate comparison
+    now.setHours(0, 0, 0, 0);
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    if (now < startDate) return { label: 'Upcoming', color: 'bg-blue-500 text-white' };
+    if (now > endDate) return { label: 'Completed', color: 'bg-slate-500 text-white' };
+    return { label: 'Ongoing', color: 'bg-emerald-500 text-white' };
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-end">
@@ -70,51 +82,64 @@ const Dashboard: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {trips.map((trip) => (
-            <Link
-              key={trip.id}
-              to={`/trips/${trip.id}`}
-              className="group bg-white rounded-xl shadow-sm hover:shadow-md border border-slate-100 overflow-hidden transition-all hover:-translate-y-1"
-            >
-              <div className="h-40 bg-gradient-to-r from-blue-500 to-cyan-500 relative p-6 flex flex-col justify-between">
-                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors"></div>
-                <div className="relative z-10 flex justify-between items-start text-white">
-                  <span className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold border border-white/30">
-                    {trip.mode}
-                  </span>
-                  <button
-                    onClick={(e) => handleDeleteClick(e, trip.id)}
-                    className="p-1.5 bg-white/20 hover:bg-red-500 rounded-full backdrop-blur-md transition-colors"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-                <div className="relative z-10 text-white">
-                  <div className="flex items-center space-x-2 text-blue-100 text-sm mb-1">
-                    <Calendar size={14} />
-                    <span>{new Date(trip.startDate).toLocaleDateString()}</span>
+          {trips.map((trip) => {
+            const bgImage = trip.itinerary && trip.itinerary[0]?.imageUrl;
+            const status = getTripStatus(trip.startDate, trip.endDate);
+
+            return (
+              <Link
+                key={trip.id}
+                to={`/trips/${trip.id}`}
+                className="group bg-white rounded-xl shadow-sm hover:shadow-md border border-slate-100 overflow-hidden transition-all hover:-translate-y-1"
+              >
+                <div
+                  className={`h-40 relative p-6 flex flex-col justify-between ${!bgImage ? 'bg-gradient-to-r from-blue-500 to-cyan-500' : ''}`}
+                  style={bgImage ? { backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+                >
+                  <div className={`absolute inset-0 transition-colors ${bgImage ? 'bg-black/40 group-hover:bg-black/50' : 'bg-black/10 group-hover:bg-black/0'}`}></div>
+                  <div className="relative z-10 flex justify-between items-start text-white">
+                    <div className="flex space-x-2">
+                      <span className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold border border-white/30">
+                        {trip.mode}
+                      </span>
+                      <span className={`backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold border border-white/10 ${status.color}`}>
+                        {status.label}
+                      </span>
+                    </div>
+                    <button
+                      onClick={(e) => handleDeleteClick(e, trip.id)}
+                      className="p-1.5 bg-white/20 hover:bg-red-500 rounded-full backdrop-blur-md transition-colors"
+                    >
+                      <Trash2 size={14} />
+                    </button>
                   </div>
-                  <h3 className="text-2xl font-bold truncate">{trip.to}</h3>
-                </div>
-              </div>
-              <div className="p-5">
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex items-center text-slate-500 text-sm">
-                    <span className="font-medium text-slate-900">{trip.totalDays}</span>
-                    <span className="ml-1">days</span>
-                  </div>
-                  <div className="flex items-center text-slate-900 font-bold">
-                    <IndianRupee size={14} className="text-green-500 mr-1" />
-                    {trip.totalCost.toLocaleString()}
+                  <div className="relative z-10 text-white">
+                    <div className="flex items-center space-x-2 text-blue-100 text-sm mb-1">
+                      <Calendar size={14} />
+                      <span>{new Date(trip.startDate).toLocaleDateString()}</span>
+                    </div>
+                    <h3 className="text-2xl font-bold truncate drop-shadow-md">{trip.to}</h3>
                   </div>
                 </div>
-                <p className="text-slate-500 text-sm line-clamp-2 mb-4">{trip.summary}</p>
-                <div className="flex items-center text-blue-600 text-sm font-medium group-hover:translate-x-1 transition-transform">
-                  View Itinerary <ChevronRight size={16} className="ml-1" />
+                <div className="p-5">
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="flex items-center text-slate-500 text-sm">
+                      <span className="font-medium text-slate-900">{trip.totalDays}</span>
+                      <span className="ml-1">days</span>
+                    </div>
+                    <div className="flex items-center text-slate-900 font-bold">
+                      <IndianRupee size={14} className="text-green-500 mr-1" />
+                      {trip.totalCost.toLocaleString()}
+                    </div>
+                  </div>
+                  <p className="text-slate-500 text-sm line-clamp-2 mb-4">{trip.summary}</p>
+                  <div className="flex items-center text-blue-600 text-sm font-medium group-hover:translate-x-1 transition-transform">
+                    View Itinerary <ChevronRight size={16} className="ml-1" />
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       )}
       <ConfirmationModal
