@@ -155,7 +155,7 @@ const TripDetails: React.FC = () => {
                         </Link>
                     )}
                     <h1 className="text-3xl font-bold text-slate-900 flex items-center">
-                        {trip.from} to {trip.to} <span className="text-slate-300 mx-3">/</span> <span className="text-slate-500 text-xl font-medium">By {trip.mode}</span>
+                        {trip.from.split(',')[0]} to {trip.to.split(',')[0]} <span className="text-slate-300 mx-3">/</span> <span className="text-slate-500 text-xl font-medium">By {trip.mode}</span>
                     </h1>
                 </div>
                 <div className="flex items-center space-x-4">
