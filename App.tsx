@@ -13,6 +13,7 @@ import Layout from './components/Layout';
 
 import LandingPage from './pages/LandingPage';
 import PhotoGallery from './pages/PhotoGallery';
+import GalleryAlbums from './pages/GalleryAlbums';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -35,6 +36,7 @@ const App: React.FC = () => {
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<LandingPage />} />
+            <Route path="/view/trip/:id" element={<TripDetails />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
 
@@ -46,6 +48,7 @@ const App: React.FC = () => {
             }>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/create" element={<CreateTrip />} />
+              <Route path="/albums" element={<GalleryAlbums />} />
               <Route path="/trips/:id" element={<TripDetails />} />
               <Route path="/trips/:id/gallery" element={<PhotoGallery />} />
               <Route path="/about" element={<AboutUs />} />

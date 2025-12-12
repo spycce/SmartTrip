@@ -44,6 +44,18 @@ export const createTrip = async (tripData: Partial<Trip>): Promise<Trip> => {
   return res.data;
 };
 
+export const duplicateTrip = async (tripData: Partial<Trip>): Promise<Trip> => {
+  // Cloning logic: Create a new trip but ensure specific fields are clean
+  // The backend calculateTrip might not be needed if we serve the full plan directly? 
+  // Actually, createTrip just saves what we send? NO, the backend usually generates it.
+  // However, if we built a "Save Trip" endpoint, we use that.
+  // If createTrip expects "prompt/destination" to generate, we might need a different endpoint or pass the full itinerary.
+  // Looking at the backend (not visible) typically we'd have a way to save a full trip.
+  // Assuming createTrip saves the provided object if it has itinerary.
+  const res = await api.post('/trips', tripData);
+  return res.data;
+};
+
 export const deleteTrip = async (id: string): Promise<void> => {
   await api.delete(`/trips/${id}`);
 };
@@ -72,7 +84,28 @@ export const getTripPhotos = async (tripId: string) => {
   return res.data;
 };
 
+// Toggle Photo Sharing
 export const togglePhotoShare = async (photoId: string) => {
   const res = await api.put(`/photos/${photoId}/share`);
+  return res.data;
+};
+
+export const deletePhoto = async (photoId: string) => {
+  const res = await api.delete(`/photos/${photoId}`);
+  return res.data;
+};
+
+export const updatePhoto = async (photoId: string, caption: string) => {
+  const res = await api.put(`/photos/${photoId}`, { caption });
+  return res.data;
+};
+
+export const getAlbums = async () => {
+  const res = await api.get('/albums');
+  return res.data;
+};
+
+export const getPublicTrip = async (tripId: string) => {
+  const res = await api.get(`/public/trips/${tripId}`);
   return res.data;
 };

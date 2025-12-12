@@ -297,6 +297,74 @@ app.put('/api/photos/:photoId/share', auth, async (req, res) => {
   }
 });
 
+// Delete Photo
+app.delete('/api/photos/:id', auth, async (req, res) => {
+  try {
+    await Photo.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
+    res.send('Deleted');
+  } catch (err) {
+    res.status(500).send('Error deleting photo');
+  }
+});
+
+// Update Photo Caption
+app.put('/api/photos/:id', auth, async (req, res) => {
+  try {
+    const photo = await Photo.findOne({ _id: req.params.id, userId: req.user.id });
+    if (!photo) return res.status(404).send('Photo not found');
+
+    photo.caption = req.body.caption;
+    await photo.save();
+
+    // Return properly formatted image similarly to other endpoints
+    res.json({
+      ...photo.toObject(),
+      image: `data:${photo.contentType};base64,${photo.image.toString('base64')}`
+    });
+  } catch (err) {
+    res.status(500).send('Error updating caption');
+  }
+});
+
+// Fetch user albums (trips + cover photo)
+app.get('/api/albums', auth, async (req, res) => {
+  try {
+    const trips = await Trip.find({ userId: req.user.id }).sort({ startDate: -1 });
+    const albums = await Promise.all(trips.map(async (trip) => {
+      const photoCount = await Photo.countDocuments({ tripId: trip._id });
+      const coverPhoto = await Photo.findOne({ tripId: trip._id }).sort({ createdAt: -1 });
+
+      let coverImage = null;
+      if (coverPhoto) {
+        coverImage = `data:${coverPhoto.contentType};base64,${coverPhoto.image.toString('base64')}`;
+      }
+
+      return {
+        tripId: trip._id,
+        title: `${trip.from} to ${trip.to}`,
+        startDate: trip.startDate,
+        photoCount,
+        coverImage
+      };
+    }));
+    res.json(albums);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error fetching albums');
+  }
+});
+
+// Public Trip View
+app.get('/api/public/trips/:id', async (req, res) => {
+  try {
+    const trip = await Trip.findOne({ _id: req.params.id, isShared: true });
+    if (!trip) return res.status(404).send('Trip not found or not shared');
+    res.json({ ...trip.toObject(), id: trip._id });
+  } catch (err) {
+    res.status(500).send('Error fetching public trip');
+  }
+});
+
 // Gemini Endpoint (Server-side proxy example)
 // OpenRouter Endpoint (Proxy)
 app.post('/api/trip/generate', auth, async (req, res) => {

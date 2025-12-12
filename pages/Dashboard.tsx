@@ -18,11 +18,82 @@ const Dashboard: React.FC = () => {
     loadTrips();
   }, []);
 
+  // Import required services
+  // We need getPublicTrip (to fetch the source) and createTrip (to save it to user)
+
   const loadTrips = async () => {
     const data = await fetchTrips();
     setTrips(data);
     setLoading(false);
   };
+
+  useEffect(() => {
+    const checkPendingTrip = async () => {
+      const pendingId = localStorage.getItem('pendingTripId');
+      if (pendingId) {
+        try {
+          // Import API services dynamically to ensure they are available
+          const { getPublicTrip, createTrip, fetchTrips } = await import('../services/api');
+
+          // 1. Fetch current user's trips to check for duplicates
+          // We need fresh data here because 'trips' state might not be fully loaded yet
+          const existingTrips = await fetchTrips();
+
+          // 2. Fetch the public trip data
+          const sourceTrip = await getPublicTrip(pendingId);
+
+          if (sourceTrip) {
+            // 3. Check for Duplicates
+            // Criteria: Same Destination (To), From, and StartDate
+            const isDuplicate = existingTrips.some((t: Trip) =>
+              t.to === sourceTrip.to &&
+              t.from === sourceTrip.from &&
+              new Date(t.startDate).getTime() === new Date(sourceTrip.startDate).getTime()
+            );
+
+            if (isDuplicate) {
+              notify('warning', 'You already have this trip in your collection.');
+              localStorage.removeItem('pendingTripId');
+              // Ensure we still load the trips to show the dashboard
+              if (existingTrips.length !== trips.length) {
+                setTrips(existingTrips);
+                setLoading(false);
+              }
+              return;
+            }
+
+            // 4. Prepare data for new trip (Clean IDs, reset dates if needed, or keep them?)
+            const newTripPayload: Partial<Trip> = {
+              from: sourceTrip.from,
+              to: sourceTrip.to,
+              startDate: sourceTrip.startDate,
+              endDate: sourceTrip.endDate,
+              mode: sourceTrip.mode,
+              totalDays: sourceTrip.totalDays,
+              summary: sourceTrip.summary,
+              itinerary: sourceTrip.itinerary,
+              expenses: sourceTrip.expenses,
+              totalCost: sourceTrip.totalCost,
+              transportHubs: sourceTrip.transportHubs
+              // Do NOT copy _id, userId, isShared, reviews
+            };
+
+            await createTrip(newTripPayload);
+            notify('success', 'Trip added to your collection!');
+            localStorage.removeItem('pendingTripId');
+            loadTrips(); // Refresh list
+          }
+        } catch (error) {
+          console.error('Failed to import trip', error);
+          notify('error', 'Failed to import the selected trip.');
+          localStorage.removeItem('pendingTripId'); // Clear to prevent infinite loop on error
+        }
+      }
+    };
+
+    // Run this AFTER the initial load or independently
+    checkPendingTrip();
+  }, []);
 
   const handleDeleteClick = (e: React.MouseEvent, id: string) => {
     e.preventDefault();

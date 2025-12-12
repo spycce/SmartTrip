@@ -51,6 +51,7 @@ export interface Review {
 
 export interface Trip {
   id: string; // Mongo ID or generated ID
+  _id?: string;
   userId: string;
   from: string;
   to: string;

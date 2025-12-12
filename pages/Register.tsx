@@ -16,7 +16,7 @@ const Register: React.FC = () => {
     try {
       const { user, token } = await registerUser(name, email, password);
       login(token, user);
-      navigate('/');
+      navigate('/dashboard');
     } catch (err) {
       alert('Registration failed');
     }
@@ -26,9 +26,9 @@ const Register: React.FC = () => {
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <div className="flex justify-center">
-             <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/30">
-                <Map size={28} className="text-white" />
-            </div>
+          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/30">
+            <Map size={28} className="text-white" />
+          </div>
         </div>
         <h2 className="mt-6 text-3xl font-bold tracking-tight text-slate-900">Create your account</h2>
         <p className="mt-2 text-sm text-slate-600">

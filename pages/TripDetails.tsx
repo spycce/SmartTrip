@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { fetchTrips, shareTrip } from '../services/api';
+import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
+import { fetchTrips, shareTrip, getPublicTrip } from '../services/api';
 import { Trip, DayPlan } from '../types';
 import MapComponent from '../components/Map';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { ArrowLeft, Calendar, MapPin, IndianRupee, CheckCircle2, Plane, Bus, Train, Car, Share2, Globe, Lock } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, IndianRupee, CheckCircle2, Plane, Bus, Train, Car, Share2, Globe, Lock, PlusCircle } from 'lucide-react';
 import ReviewSection from '../components/ReviewSection';
 import { useNotification } from '../context/NotificationContext';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+
+
 
 const TimelineItem = ({ day }: { day: DayPlan }) => (
     <div className="relative pl-8 sm:pl-32 py-8 group">
@@ -102,17 +104,32 @@ const TimelineItem = ({ day }: { day: DayPlan }) => (
 
 const TripDetails: React.FC = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
+    const location = useLocation();
     const [trip, setTrip] = useState<Trip | null>(null);
     const { notify } = useNotification();
+    const isPublicView = location.pathname.includes('/view/trip');
 
     useEffect(() => {
         const loadTrip = async () => {
-            const trips = await fetchTrips();
-            const found = trips.find(t => t.id === id);
-            setTrip(found || null);
+            try {
+                if (isPublicView && id) {
+                    const data = await getPublicTrip(id);
+                    setTrip(data);
+                } else {
+                    const trips = await fetchTrips();
+                    const found = trips.find(t => t.id === id);
+                    if (found) setTrip(found);
+                }
+            } catch (error) {
+                console.error("Failed to load trip", error);
+                if (isPublicView) {
+                    notify('error', 'Trip not found or private');
+                }
+            }
         };
         loadTrip();
-    }, [id]);
+    }, [id, isPublicView]);
 
     const handleShare = async () => {
         if (!trip) return;
@@ -132,21 +149,38 @@ const TripDetails: React.FC = () => {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <Link to="/dashboard" className="text-slate-500 hover:text-blue-600 flex items-center mb-2 transition-colors">
-                        <ArrowLeft size={16} className="mr-1" /> Back to Dashboard
-                    </Link>
+                    {!isPublicView && (
+                        <Link to="/dashboard" className="text-slate-500 hover:text-blue-600 flex items-center mb-2 transition-colors">
+                            <ArrowLeft size={16} className="mr-1" /> Back to Dashboard
+                        </Link>
+                    )}
                     <h1 className="text-3xl font-bold text-slate-900 flex items-center">
                         {trip.from} to {trip.to} <span className="text-slate-300 mx-3">/</span> <span className="text-slate-500 text-xl font-medium">By {trip.mode}</span>
                     </h1>
                 </div>
                 <div className="flex items-center space-x-4">
-                    <button
-                        onClick={handleShare}
-                        className={`flex items-center px-4 py-2 rounded-xl border font-medium transition-all ${trip.isShared ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100 shadow-sm' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 shadow-sm'}`}
-                    >
-                        {trip.isShared ? <Globe size={18} className="mr-2" /> : <Lock size={18} className="mr-2" />}
-                        {trip.isShared ? 'Shared Publicly' : 'Private Trip'}
-                    </button>
+                    {isPublicView ? (
+                        <button
+                            onClick={() => {
+                                if (trip) {
+                                    localStorage.setItem('pendingTripId', trip.id);
+                                    navigate('/login');
+                                }
+                            }}
+                            className="flex items-center px-6 py-2.5 rounded-xl font-bold bg-blue-600 text-white shadow-lg hover:bg-blue-700 hover:scale-105 transition-all"
+                        >
+                            <PlusCircle size={20} className="mr-2" />
+                            Accept & Plan This Trip
+                        </button>
+                    ) : (
+                        <button
+                            onClick={handleShare}
+                            className={`flex items-center px-4 py-2 rounded-xl border font-medium transition-all ${trip.isShared ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100 shadow-sm' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 shadow-sm'}`}
+                        >
+                            {trip.isShared ? <Globe size={18} className="mr-2" /> : <Lock size={18} className="mr-2" />}
+                            {trip.isShared ? 'Shared Publicly' : 'Private Trip'}
+                        </button>
+                    )}
 
                     <div className="flex items-center space-x-4 bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
                         <div className="px-4 border-r border-slate-200">

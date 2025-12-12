@@ -16,7 +16,7 @@ const Login: React.FC = () => {
     try {
       const { user, token } = await loginUser(email, password);
       login(token, user);
-      navigate('/');
+      navigate('/dashboard');
     } catch (err) {
       setError('Invalid credentials. Please check your email and password.');
     }
@@ -26,9 +26,9 @@ const Login: React.FC = () => {
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <div className="flex justify-center">
-            <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/30">
-                <Map size={28} className="text-white" />
-            </div>
+          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/30">
+            <Map size={28} className="text-white" />
+          </div>
         </div>
         <h2 className="mt-6 text-3xl font-bold tracking-tight text-slate-900">Sign in to SmartTrip</h2>
         <p className="mt-2 text-sm text-slate-600">
@@ -40,7 +40,7 @@ const Login: React.FC = () => {
         <div className="bg-white py-8 px-4 shadow-xl shadow-slate-200/50 sm:rounded-2xl sm:px-10 border border-slate-100">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && <div className="text-red-500 text-sm text-center bg-red-50 p-2 rounded-lg">{error}</div>}
-            
+
             <div>
               <label className="block text-sm font-medium text-slate-700">Email address</label>
               <div className="mt-1">

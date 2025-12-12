@@ -10,7 +10,8 @@ import {
   PlusCircle,
   Settings,
   Info,
-  Camera
+  Camera,
+  Image as ImageIcon
 } from 'lucide-react';
 
 const Layout: React.FC = () => {
@@ -63,6 +64,7 @@ const Layout: React.FC = () => {
             <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-4 mb-2">Menu</div>
             <NavItem to="/dashboard" icon={LayoutDashboard} label="Dashboard" />
             <NavItem to="/create" icon={PlusCircle} label="New Trip" />
+            <NavItem to="/albums" icon={ImageIcon} label="My Gallery" />
             <NavItem to="/about" icon={Info} label="About Us" />
 
             {tripId && (
