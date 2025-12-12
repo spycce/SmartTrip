@@ -10,6 +10,7 @@ import {
   ArrowRight, Save, RotateCcw, History
 } from 'lucide-react';
 import MapComponent from '../components/Map';
+import AutocompleteInput from '../components/AutocompleteInput';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
@@ -114,12 +115,18 @@ const CreateTrip: React.FC = () => {
   const [generatedPlans, setGeneratedPlans] = useState<Partial<Trip>[]>([]);
   const [currentPlanIndex, setCurrentPlanIndex] = useState(-1);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    from: string;
+    to: string;
+    startDate: string;
+    endDate: string;
+    mode: TravelMode | null;
+  }>({
     from: '',
     to: '',
     startDate: '',
     endDate: '',
-    mode: TravelMode.FLIGHT
+    mode: null // Start unselected
   });
 
   // Clear fields on mount (or when revisited)
@@ -129,7 +136,7 @@ const CreateTrip: React.FC = () => {
       to: '',
       startDate: '',
       endDate: '',
-      mode: TravelMode.FLIGHT
+      mode: null
     });
   }, []);
 
@@ -146,6 +153,12 @@ const CreateTrip: React.FC = () => {
 
   const handleGenerate = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+
+    if (!formData.mode) {
+      notify('error', 'Please select a mode of travel.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -164,7 +177,8 @@ const CreateTrip: React.FC = () => {
         ...formData,
         ...plan,
         totalDays,
-        totalCost
+        totalCost,
+        mode: formData.mode // ensure mode is strict TravelMode
       } as Partial<Trip>;
 
       // Enrich with images (in background or await?)
@@ -269,33 +283,21 @@ const CreateTrip: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-700">Origin</label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-3 text-slate-400" size={18} />
-                    <input
-                      type="text"
-                      name="from"
-                      required
-                      value={formData.from}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                      placeholder="e.g. Pune"
-                    />
-                  </div>
+                  <AutocompleteInput
+                    value={formData.from}
+                    onChange={(val) => setFormData(prev => ({ ...prev, from: val }))}
+                    placeholder="e.g. Pune"
+                    icon={<MapPin size={18} />}
+                  />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-700">Destination</label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-3 text-slate-400" size={18} />
-                    <input
-                      type="text"
-                      name="to"
-                      required
-                      value={formData.to}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                      placeholder="e.g. Gir National Park"
-                    />
-                  </div>
+                  <AutocompleteInput
+                    value={formData.to}
+                    onChange={(val) => setFormData(prev => ({ ...prev, to: val }))}
+                    placeholder="e.g. Gir National Park"
+                    icon={<MapPin size={18} />}
+                  />
                 </div>
               </div>
             </div>
@@ -363,11 +365,16 @@ const CreateTrip: React.FC = () => {
                   </div>
                 ))}
               </div>
+              {!formData.mode && (
+                <p className="text-sm text-red-500 text-center animate-pulse">
+                  * Please select a mode of travel
+                </p>
+              )}
             </div>
 
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-600/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center space-x-2"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-600/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center space-x-2 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               <span>Generate Smart Itinerary</span>
               <ArrowRight size={20} />
